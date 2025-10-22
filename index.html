@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -29,8 +28,6 @@
     <div id="alert-container" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2"></div>
 
 
-
-
     <script type="module">
         // --- CONSTANTS ---
         const ACCESS_PASSWORD = "3737";
@@ -53,8 +50,6 @@
         };
 
 
-
-
         // --- STATE MANAGEMENT ---
         const state = {
             isAuthenticated: false,
@@ -72,17 +67,11 @@
         };
 
 
-
-
         const rootEl = document.getElementById('root');
         const alertContainerEl = document.getElementById('alert-container');
 
 
-
-
         // --- UTILITY & SERVICE FUNCTIONS ---
-
-
 
 
         function sanitizeKey(str) {
@@ -92,8 +81,6 @@
                 .replace(/（/g, '(')
                 .replace(/）/g, ')');
         }
-
-
 
 
         async function fetchSheetData(spreadsheetId, sheetName) {
@@ -110,8 +97,6 @@
             const data = JSON.parse(jsonString);
 
 
-
-
             if (data.status === 'error') {
                 const errorMessage = data.errors.map((e) => e.detailed_message).join(', ');
                 if (errorMessage.includes('ACCESS_DENIED')) {
@@ -121,12 +106,8 @@
             }
 
 
-
-
             const rows = data.table.rows;
             const cols = data.table.cols;
-
-
 
 
             return rows.map((row) => {
@@ -135,8 +116,6 @@
                     const originalColLabel = cols[index].label;
                     const colLabel = sanitizeKey(originalColLabel);
                     let value = cell ? cell.v : null;
-
-
 
 
                     if (colLabel === '対象日' && typeof value === 'string' && value.startsWith('Date(')) {
@@ -155,33 +134,28 @@
         }
 
 
-
-
         async function fetchAllSheetsData() {
             const allData = {};
             const promises = STORE_NAMES.map(storeName => {
                 const config = STORE_CONFIG[storeName];
                 return fetchSheetData(config.id, config.sheet);
             });
-           
+            
             const results = await Promise.allSettled(promises);
-           
+            
             results.forEach((result, index) => {
                 const storeName = STORE_NAMES[index];
                 if (result.status === 'fulfilled') {
                     allData[storeName] = result.value;
                 } else {
                     console.error(`Failed to fetch data for ${storeName}:`, result.reason);
-                    allData[storeName] = [];
+                    allData[storeName] = []; 
                     throw result.reason;
                 }
             });
 
-
             return allData;
         }
-
-
 
 
         function getComparisonDate(targetDate) {
@@ -195,8 +169,6 @@
             dateObj.setFullYear(dateObj.getFullYear() - 1);
             return `${dateObj.getFullYear()}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${String(dateObj.getDate()).padStart(2, '0')}`;
         }
-
-
 
 
         function calculateComparison(current, previous) {
@@ -216,8 +188,6 @@
         }
 
 
-
-
         const convertToCsv = (headers, data) => {
             const csvRows = [headers.join(',')];
             data.forEach(row => {
@@ -226,8 +196,6 @@
             });
             return csvRows.join('\n');
         };
-
-
 
 
         const downloadCsv = (csvString, filename) => {
@@ -241,8 +209,6 @@
         };
 
 
-
-
         const generateCsvRows = (dataGetter) => {
             const dataRows = [];
             STORE_NAMES.forEach(storeName => {
@@ -251,8 +217,6 @@
                     const comparison = calculateComparison(current, previous);
                     const difference = (previous !== undefined && previous !== null) ? current - previous : 'N/A';
                     dataRows.push([storeName, mainKey, current, previous ?? 'N/A', comparison.percentage, difference]);
-
-
 
 
                     (SUB_ITEM_MAP[mainKey] || []).forEach(([label, subKey]) => {
@@ -265,8 +229,6 @@
             });
             return dataRows;
         };
-
-
 
 
         const handleSingleDayCsvDownload = () => {
@@ -283,8 +245,6 @@
         };
 
 
-
-
         const handlePeriodSummaryCsvDownload = () => {
             const start = state.periodStartDate.replace(/-/g, '/');
             const end = state.periodEndDate.replace(/-/g, '/');
@@ -297,8 +257,6 @@
             const csvString = convertToCsv(headers, csvRows);
             downloadCsv(csvString, `sales_period_${state.periodStartDate}_to_${state.periodEndDate}.csv`);
         };
-
-
 
 
         // --- RENDER FUNCTIONS ---
@@ -327,8 +285,6 @@
             const iconName = { info: 'info', warning: 'alert-triangle', error: 'alert-circle' };
 
 
-
-
             const alertEl = document.createElement('div');
             alertEl.id = alertId;
             alertEl.className = `p-4 rounded-lg shadow-xl border transition-all duration-300 opacity-0 transform translate-y-4 ${colorMap[type]}`;
@@ -337,19 +293,15 @@
             alertContainerEl.appendChild(alertEl);
             lucide.createIcons();
 
-
             setTimeout(() => {
                 alertEl.classList.remove('opacity-0', 'translate-y-4');
             }, 10);
-
 
             setTimeout(() => {
                 alertEl.classList.add('opacity-0', 'translate-y-4');
                 setTimeout(() => alertEl.remove(), 300);
             }, duration);
         }
-
-
 
 
         function renderComparisonBadge({ current, previous, isLarge = false, unit = '¥' }) {
@@ -361,13 +313,9 @@
             const icon = { increase: 'trending-up', decrease: 'trending-down', same: 'minus' }[comparison.type];
 
 
-
-
             const prefix = unit === '¥' ? '¥' : '';
             const suffix = (unit === '人' || unit === '件') ? unit : '';
             const formattedPrevious = `${prefix}${formatNumber(previous)}${suffix}`;
-
-
 
 
             return `
@@ -409,8 +357,6 @@
         }
 
 
-
-
         function renderDailyReport() {
             const { storeData, comparisonData, comparisonDate } = getMemoizedData();
             if (!state.selectedDate) {
@@ -426,7 +372,6 @@
                         const data = storeData[storeName];
                         const prevData = comparisonData[storeName];
 
-
                         if (!data) {
                             return `
                                 <div class="space-y-6">
@@ -439,7 +384,6 @@
                                 </div>`;
                         }
 
-
                         return `
                             <div class="space-y-6">
                                 <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-xl shadow-xl">
@@ -449,7 +393,7 @@
                                     </p>
                                 </div>
                                 ${renderSalesCard({ title: "売上日計", data, prevData, dataKey: "売上日計" })}
-                                ${Object.entries(SUB_ITEM_MAP).map(([key, subItems]) =>
+                                ${Object.entries(SUB_ITEM_MAP).map(([key, subItems]) => 
                                    renderSalesCard({ title: key, data, prevData, dataKey: key, subKeys: subItems })
                                 ).join('')}
                                 ${renderSalesCard({ title: "物販", data, prevData, dataKey: "物販" })}
@@ -467,7 +411,6 @@
                     </div>`;
             }
 
-
             if (!state.periodSummary) {
                 return `
                     <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
@@ -476,7 +419,6 @@
                     </div>`;
             }
 
-
             const categoryMap = [
                 { key: 'サウナ', label: 'サウナ', subItems: [{ key: '人数(S)', label: '人数', unit: '人' }] },
                 { key: '宿泊売上計', label: '宿泊', subItems: [{ key: '人数(C)', label: '人数', unit: '人' }] },
@@ -484,10 +426,9 @@
                 { key: 'グリル', label: 'グリル', subItems: [{ key: '件数(G)', label: '件数', unit: '件' }] },
                 { key: '物販', label: '物販', subItems: [] },
             ];
-           
+            
             const start = state.periodStartDate.replace(/-/g, '/');
             const end = state.periodEndDate.replace(/-/g, '/');
-
 
             return `
                 <div class="bg-indigo-50 text-indigo-800 p-4 rounded-lg text-base mb-6 border border-indigo-200">
@@ -500,7 +441,6 @@
                         const prevData = state.comparisonPeriodSummary?.[storeName];
                         const currentTotal = currentData['売上日計'] || 0;
                         const prevTotal = prevData?.['売上日計'];
-
 
                         return `
                             <div class="bg-white p-6 rounded-xl shadow-lg border-2 border-indigo-100 hover:shadow-xl transition-shadow">
@@ -542,8 +482,6 @@
                     }).join('')}
                 </div>`;
         }
-
-
 
 
         function renderPeriodSummary() {
@@ -598,8 +536,6 @@
         }
 
 
-
-
         function renderErrorState() {
              return `
                 <div class="min-h-screen flex items-center justify-center p-4">
@@ -618,7 +554,6 @@
         function renderDashboard() {
             const isLoading = state.loading && Object.keys(state.allData).length === 0;
             const isRefreshing = state.loading && !isLoading;
-
 
             return `
                 <div class="min-h-screen p-4 sm:p-8">
@@ -664,8 +599,6 @@
         }
 
 
-
-
         // --- EVENT HANDLERS & APP LOGIC ---
        
         let memoizedData = {};
@@ -691,8 +624,6 @@
         }
 
 
-
-
         function handlePasswordSubmit(e) {
             e.preventDefault();
             const password = e.target.elements.password.value;
@@ -707,8 +638,6 @@
         }
 
 
-
-
         function handleDateChange(e) {
             state.selectedDate = e.target.value;
             localStorage.setItem('dashboard_selectedDate', JSON.stringify(state.selectedDate));
@@ -716,15 +645,11 @@
         }
 
 
-
-
         function handleSortChange(e) {
             state.sortOrder = e.target.value;
             localStorage.setItem('dashboard_sortOrder', JSON.stringify(state.sortOrder));
             loadData();
         }
-
-
 
 
         function handleSummarize() {
@@ -735,17 +660,16 @@
             state.isSummarizing = true;
             renderApp();
 
-
             setTimeout(() => {
                 const start = state.periodStartDate.replace(/-/g, '/');
                 const end = state.periodEndDate.replace(/-/g, '/');
-               
+                
                 state.periodSummary = Object.fromEntries(STORE_NAMES.map(storeName => {
                     const filteredData = (state.allData[storeName] || []).filter(item => item['対象日'] >= start && item['対象日'] <= end);
                     const storeSummary = Object.fromEntries(SUMMABLE_KEYS.map(key => [key, filteredData.reduce((acc, item) => acc + (item[key] || 0), 0)]));
                     return [storeName, storeSummary];
                 }));
-               
+                
                 const compStart = getComparisonDate(start);
                 const compEnd = getComparisonDate(end);
                 if(compStart && compEnd) {
@@ -758,14 +682,11 @@
                     state.comparisonPeriodSummary = null;
                 }
 
-
                 state.isSummarizing = false;
                 showAlert(`期間集計を完了しました (${start}〜${end})`);
                 renderApp();
             }, 500);
         }
-
-
 
 
         async function loadData() {
@@ -776,12 +697,10 @@
             renderApp();
 
 
-
-
             try {
                 const data = await fetchAllSheetsData();
                 state.allData = data;
-               
+                
                 const datesSet = new Set();
                 Object.values(data).forEach(storeData => {
                     (storeData || []).forEach(item => {
@@ -789,13 +708,10 @@
                     });
                 });
 
-
                 const sortedDates = Array.from(datesSet).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
                 if (state.sortOrder === 'newest') sortedDates.reverse();
 
-
                 state.availableDates = sortedDates;
-
 
                 if (sortedDates.length > 0) {
                      if (!state.selectedDate || !datesSet.has(state.selectedDate)) {
@@ -820,18 +736,14 @@
             const dateSelect = document.getElementById('date-select');
             if (dateSelect) dateSelect.addEventListener('change', handleDateChange);
 
-
             const sortSelect = document.getElementById('sort-select');
             if (sortSelect) sortSelect.addEventListener('change', handleSortChange);
-
 
             const reloadBtn = document.getElementById('reload-btn');
             if (reloadBtn) reloadBtn.addEventListener('click', loadData);
 
-
             const csvDailyBtn = document.getElementById('csv-daily-btn');
             if(csvDailyBtn) csvDailyBtn.addEventListener('click', handleSingleDayCsvDownload);
-
 
             const csvPeriodBtn = document.getElementById('csv-period-btn');
             if(csvPeriodBtn) csvPeriodBtn.addEventListener('click', handlePeriodSummaryCsvDownload);
@@ -848,17 +760,13 @@
                 localStorage.setItem('dashboard_periodEndDate', JSON.stringify(e.target.value));
             });
 
-
             const summarizeBtn = document.getElementById('summarize-btn');
             if(summarizeBtn) summarizeBtn.addEventListener('click', handleSummarize);
         }
 
 
-
-
         function renderApp() {
             const isLoading = state.loading && Object.keys(state.allData).length === 0;
-
 
             if (isLoading) {
                 rootEl.innerHTML = renderLoader('データを読み込んでいます...');
@@ -874,8 +782,6 @@
         }
 
 
-
-
         function init() {
             const sessionAuth = sessionStorage.getItem('dashboard_authenticated');
             if (sessionAuth === 'true') {
@@ -889,13 +795,8 @@
         }
 
 
-
-
         // --- INITIALIZATION ---
         init();
     </script>
 </body>
 </html>
-
-
-
