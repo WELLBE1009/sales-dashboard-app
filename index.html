@@ -21,7 +21,12 @@
                 transform: rotate(360deg)
             }
         }
+        /* Fix for date picker icon color */
+        input[type="date"] {
+            color-scheme: light;
+        }
     </style>
+<link rel="stylesheet" href="/index.css">
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-slate-100">
     <div id="root"></div>
@@ -31,10 +36,11 @@
     <script type="module">
         // --- CONSTANTS ---
         const ACCESS_PASSWORD = "3737";
+        const SPREADSHEET_ID = '1HUUqtExd1AhRcco2DcUpaOuV-QFPSlltNtqflLi1eBk';
         const STORE_CONFIG = {
-            '栄': { id: '1hj6JlN_c2UcHBXXKIVYXL7IUNNiwuxYJ', sheet: '栄' },
-            '今池': { id: '1EDAZMKJ8kVlWLeUJbC3Dox5oNM8DTK3T', sheet: '今池' },
-            '福岡': { id: '1su129OCN0Qw0lvZoNamByW1F1gYX5UmK', sheet: '福岡' },
+            '栄': { id: SPREADSHEET_ID, sheet: '売上実績一覧（栄）' },
+            '今池': { id: SPREADSHEET_ID, sheet: '売上実績一覧（今池）' },
+            '福岡': { id: SPREADSHEET_ID, sheet: '売上実績一覧（福岡)' },
         };
         const STORE_NAMES = Object.keys(STORE_CONFIG);
         const COMPARISON_KEYS = ['売上日計', 'サウナ', '宿泊売上計', 'マッサージ', 'グリル', '物販'];
@@ -798,5 +804,6 @@
         // --- INITIALIZATION ---
         init();
     </script>
+<script type="module" src="/index.tsx"></script>
 </body>
 </html>
